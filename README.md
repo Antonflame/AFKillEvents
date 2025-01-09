@@ -10,4 +10,4 @@ AFKillEvents - плагин на 2 ивента, связанные с убий�
 
 
 
-Автор: anton_flame (Telegram: anton_flame)
+**Автор: anton_flame (Telegram: anton_flame)**
