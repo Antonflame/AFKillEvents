@@ -1,0 +1,9 @@
+name: AFKillEvents
+version: '${project.version}'
+main: ru.anton_flame.afkillevents.AFKillEvents
+api-version: '1.16'
+authors: [anton_flame]
+commands:
+  afkillevents:
+    aliases:
+      - afke

@@ -1,0 +1,8 @@
+# Ничего не менять!
+first-event:
+  active: false
+  players: ''
+second-event:
+  active: false
+  winner-name: ''
+  victim-name: ''
