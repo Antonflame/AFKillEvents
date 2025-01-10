@@ -5,7 +5,7 @@
 # ██║░░██║██║░░░░░██║░╚██╗██║███████╗███████╗██████╔╝███████╗░░╚██╔╝░░███████╗██║░╚███║░░░██║░░░██████╔╝
 # ╚═╝░░╚═╝╚═╝░░░░░╚═╝░░╚═╝╚═╝╚══════╝╚══════╝╚═════╝░╚══════╝░░░╚═╝░░░╚══════╝╚═╝░░╚══╝░░░╚═╝░░░╚═════╝░
 #
-# Автор: anton_flame (Telegram: anton_flame)
+# Автор: anton_flame (Telegram: @anton_flame)
 #
 # Формат использовония Hex: &#
 # Удобный сайт для получения Hex цветов: https://htmlcolorcodes.com/
@@ -117,8 +117,6 @@ messages:
     - "&fПомощь по плагину &6AFKillEvents&f:"
     - ""
     - "&6/afkillevents reload &f- перезагрузить конфигурацию"
-    - "&6/afkillevents start first &f- начать первый ивент принудительно"
-    - "&6/afkillevents stop first &f- окончить первый ивент принудительно"
-    - "&6/afkillevents start second &f- начать второй ивент принудительно"
-    - "&6/afkillevents stop second &f- окончить второй ивент принудительно"
+    - "&6/afkillevents start first/second &f- начать ивент принудительно"
+    - "&6/afkillevents stop first/second &f- окончить ивент принудительно"
     - ""
