@@ -1,5 +1,6 @@
 package ru.anton_flame.afkillevents.events.firstevent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,9 @@ public class Tasks extends BukkitRunnable {
 
         if (!FirstEvent.isFirstEventActive()) {
             if (time.equalsIgnoreCase(FirstEvent.startTime)) {
-                FirstEvent.start();
+                if (Bukkit.getOnlinePlayers().size() > 1) {
+                    FirstEvent.start();
+                }
             }
         } else {
             if (time.equalsIgnoreCase(FirstEvent.stopTime)) {

@@ -1,41 +1,50 @@
 package ru.anton_flame.afkillevents.events.secondevent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import ru.anton_flame.afkillevents.utils.ConfigManager;
+import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
-import ru.anton_flame.afkillevents.utils.Utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class SecondEvent {
 
     public static boolean isSecondEventActive() {
-        return InfoFile.get().getBoolean("second-event.active");
+        return InfoFile.secondEventActive;
     }
     public static String winnerName() {
-        return InfoFile.get().getString("second-event.winner-name");
+        return InfoFile.secondEventWinnerName;
     }
     public static String victimName() {
-        return InfoFile.get().getString("second-event.victim-name");
+        return InfoFile.secondEventVictimName;
     }
 
-    public static String startTime = Utils.getString("second-event.settings.start-time");
-    public static String stopTime = Utils.getString("second-event.settings.stop-time");
+    public static String startTime = ConfigManager.secondEventStartTime;
+    public static String stopTime = ConfigManager.secondEventStopTime;
+
+    public static Random random = new Random();
 
     public static void start() {
-        if (Utils.getBoolean("second-event.settings.enabled")) {
+        if (ConfigManager.secondEventEnabled) {
             if (!isSecondEventActive()) {
                 if (!Bukkit.getOnlinePlayers().isEmpty()) {
+                    InfoFile.secondEventActive = true;
                     InfoFile.get().set("second-event.active", true);
-                    InfoFile.save();
 
                     Random random = new Random();
                     Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
-                    InfoFile.get().set("second-event.victim-name", players[random.nextInt(players.length)].getName());
+                    String victimName = players[random.nextInt(players.length)].getName();
+                    InfoFile.get().set("second-event.victim-name", victimName);
+                    InfoFile.secondEventVictimName = victimName;
+                    InfoFile.save();
 
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        for (String message : Utils.getStringList("second-event.messages.started")) {
-                            Utils.sendMessage(player, message.replace("%player%", victimName()));
+                        for (String message : ConfigManager.secondEventStartedForPlayers) {
+                            player.sendMessage(Hex.color(message.replace("%player%", victimName())));
                         }
                     }
                 }
@@ -46,15 +55,14 @@ public class SecondEvent {
     public static void stopVictimKilled() {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                for (String message : Utils.getStringList("second-event.messages.stopped-victim-killed")) {
-                    Utils.sendMessage(player, message.replace("%player%", winnerName()));
+                for (String message : ConfigManager.secondEventStoppedVictimKilled) {
+                    player.sendMessage(Hex.color(message.replace("%player%", winnerName())));
                 }
             }
 
-            for (String command : Utils.getStringList("second-event.settings.reward-commands-victim-killed")) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", winnerName()));
-            }
+            dispatchRewardsCommand(ConfigManager.secondEventRewardsForWinner, "%player%", winnerName());
 
+            InfoFile.secondEventActive = false;
             InfoFile.get().set("second-event.active", false);
             InfoFile.get().set("second-event.winner-name", "");
             InfoFile.get().set("second-event.victim-name", "");
@@ -65,19 +73,30 @@ public class SecondEvent {
     public static void stopVictimNotKilled() {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                Utils.sendMessageFromConfig(player, null, "second-event.messages.stopped-victim-not-killed");
-            }
-
-            if (Utils.getBoolean("second-event.settings.reward-victim-not-killed.enabled")) {
-                for (String command : Utils.getStringList("second-event.settings.reward-commands-victim-not-killed")) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", victimName()));
+                for (String message : ConfigManager.secondEventStoppedVictimNotKilled) {
+                    player.sendMessage(Hex.color(message));
                 }
             }
 
+            if (ConfigManager.rewardVictimNotKilledEnabled) {
+                dispatchRewardsCommand(ConfigManager.secondEventRewardsVictimNotKilled, "%player%", victimName());
+            }
+
+            InfoFile.secondEventActive = false;
             InfoFile.get().set("second-event.active", false);
             InfoFile.get().set("second-event.winner-name", "");
             InfoFile.get().set("second-event.victim-name", "");
             InfoFile.save();
+        }
+    }
+
+    public static void dispatchRewardsCommand(ConfigurationSection rewardsSection, String target, String playerName) {
+        List<String> rewards = new ArrayList<>(rewardsSection.getKeys(false));
+        String reward = rewards.get(random.nextInt(rewards.size()));
+        List<String> commands = rewardsSection.getStringList(reward);
+
+        for (String command : commands) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace(target, playerName));
         }
     }
 }

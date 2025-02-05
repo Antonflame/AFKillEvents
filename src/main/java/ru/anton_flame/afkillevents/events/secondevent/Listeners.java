@@ -15,6 +15,7 @@ public class Listeners implements Listener {
             Player victim = event.getEntity();
 
             if (killer != null && !killer.getName().equalsIgnoreCase(victim.getName()) && victim.getName().equalsIgnoreCase(SecondEvent.victimName())) {
+                InfoFile.secondEventWinnerName = killer.getName();
                 InfoFile.get().set("second-event.winner-name", killer.getName());
                 InfoFile.save();
 

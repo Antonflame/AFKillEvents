@@ -7,10 +7,16 @@ import org.jetbrains.annotations.NotNull;
 import ru.anton_flame.afkillevents.AFKillEvents;
 import ru.anton_flame.afkillevents.events.firstevent.FirstEvent;
 import ru.anton_flame.afkillevents.events.secondevent.SecondEvent;
+import ru.anton_flame.afkillevents.utils.ConfigManager;
+import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
-import ru.anton_flame.afkillevents.utils.Utils;
 
 public class AFKillEventsCommand implements CommandExecutor {
+
+    private final AFKillEvents plugin;
+    public AFKillEventsCommand(AFKillEvents plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
@@ -18,12 +24,14 @@ public class AFKillEventsCommand implements CommandExecutor {
             switch (strings[0].toLowerCase()) {
                 case "reload":
                     if (commandSender.hasPermission("afkillevents.reload")) {
-                        AFKillEvents.getPlugin().reloadConfig();
-                        InfoFile.reload(AFKillEvents.getPlugin());
+                        plugin.reloadConfig();
+                        ConfigManager.setupConfigValues(plugin);
+                        InfoFile.reload(plugin);
+                        InfoFile.setupConfigValues();
 
-                        Utils.sendMessageFromConfig(commandSender, "messages.reloaded", null);
+                        commandSender.sendMessage(Hex.color(ConfigManager.reloaded));
                     } else {
-                        Utils.sendMessageFromConfig(commandSender, "messages.no-permission", null);
+                        commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                     }
                     break;
 
@@ -35,12 +43,12 @@ public class AFKillEventsCommand implements CommandExecutor {
                                     if (!FirstEvent.isFirstEventActive()) {
                                         FirstEvent.start();
 
-                                        Utils.sendMessageFromConfig(commandSender, "messages.first-event-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.firstEventStarted));
                                     } else {
-                                        Utils.sendMessageFromConfig(commandSender, "messages.event-already-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.eventAlreadyStarted));
                                     }
                                 } else {
-                                    Utils.sendMessageFromConfig(commandSender, "messages.no-permission", null);
+                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
                                 break;
                             case "second":
@@ -48,12 +56,12 @@ public class AFKillEventsCommand implements CommandExecutor {
                                     if (!SecondEvent.isSecondEventActive()) {
                                         SecondEvent.start();
 
-                                        Utils.sendMessageFromConfig(commandSender, "messages.second-event-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.secondEventStarted));
                                     } else {
-                                        Utils.sendMessageFromConfig(commandSender, "messages.event-already-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.eventAlreadyStarted));
                                     }
                                 } else {
-                                    Utils.sendMessageFromConfig(commandSender, "messages.no-permission", null);
+                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
                                 break;
                         }
@@ -68,12 +76,12 @@ public class AFKillEventsCommand implements CommandExecutor {
                                     if (FirstEvent.isFirstEventActive()) {
                                         FirstEvent.stop();
 
-                                        Utils.sendMessageFromConfig(commandSender, "messages.first-event-stopped", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.firstEventStopped));
                                     } else {
-                                        Utils.sendMessageFromConfig(commandSender, "messages.event-not-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.eventNotStarted));
                                     }
                                 } else {
-                                    Utils.sendMessageFromConfig(commandSender, "messages.no-permission", null);
+                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
                                 break;
                             case "second":
@@ -81,12 +89,12 @@ public class AFKillEventsCommand implements CommandExecutor {
                                     if (SecondEvent.isSecondEventActive()) {
                                         SecondEvent.stopVictimNotKilled();
 
-                                        Utils.sendMessageFromConfig(commandSender, "messages.second-event-stopped", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.secondEventStopped));
                                     } else {
-                                        Utils.sendMessageFromConfig(commandSender, "messages.event-not-started", null);
+                                        commandSender.sendMessage(Hex.color(ConfigManager.eventNotStarted));
                                     }
                                 } else {
-                                    Utils.sendMessageFromConfig(commandSender, "messages.no-permission", null);
+                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
                                 break;
                         }
@@ -94,11 +102,15 @@ public class AFKillEventsCommand implements CommandExecutor {
                     break;
 
                 default:
-                    Utils.sendMessageFromConfig(commandSender, null, "messages.help");
+                    for (String help : ConfigManager.help) {
+                        commandSender.sendMessage(Hex.color(help));
+                    }
             }
 
         } else {
-            Utils.sendMessageFromConfig(commandSender, null, "messages.help");
+            for (String help : ConfigManager.help) {
+                commandSender.sendMessage(Hex.color(help));
+            }
         }
         return true;
     }

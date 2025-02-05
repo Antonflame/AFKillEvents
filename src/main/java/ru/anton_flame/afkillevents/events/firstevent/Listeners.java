@@ -1,5 +1,6 @@
 package ru.anton_flame.afkillevents.events.firstevent;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,13 +15,14 @@ public class Listeners implements Listener {
             Player killer = event.getEntity().getKiller();
 
             if (killer != null) {
+                ConfigurationSection playersSection = InfoFile.players;
                 int kills = 0;
 
-                if (InfoFile.get().getString("first-event.players." + killer.getName()) != null) {
-                    kills = InfoFile.get().getInt("first-event.players." + killer.getName());
+                if (playersSection.getString(killer.getName()) != null) {
+                    kills = playersSection.getInt(killer.getName());
                 }
 
-                InfoFile.get().set("first-event.players." + killer.getName(), kills + 1);
+                playersSection.set(killer.getName(), kills + 1);
                 InfoFile.save();
             }
         }
