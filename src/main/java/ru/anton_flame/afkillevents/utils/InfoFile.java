@@ -1,5 +1,6 @@
 package ru.anton_flame.afkillevents.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -42,8 +43,8 @@ public class InfoFile {
         try {
             config.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            System.out.println("Ошибка при перезагрузке файла info.yml:");
-            System.out.println(e.getMessage());
+            plugin.getLogger().fine("Ошибка при перезагрузке файла info.yml:");
+            plugin.getLogger().fine(e.getMessage());
         }
     }
 
@@ -51,8 +52,8 @@ public class InfoFile {
         try {
             config.save(file);
         } catch (IOException e) {
-            System.out.println("Ошибка при сохранении файла info.yml:");
-            System.out.println(e.getMessage());
+            Bukkit.getLogger().fine("Ошибка при сохранении файла info.yml:");
+            Bukkit.getLogger().fine(e.getMessage());
         }
     }
 

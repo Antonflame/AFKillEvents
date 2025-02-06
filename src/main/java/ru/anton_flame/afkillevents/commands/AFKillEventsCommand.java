@@ -64,6 +64,9 @@ public class AFKillEventsCommand implements CommandExecutor {
                                     commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
                                 break;
+                            default:
+                                commandSender.sendMessage(Hex.color(ConfigManager.incorrectEvent));
+                                break;
                         }
                     }
                     break;
@@ -96,6 +99,9 @@ public class AFKillEventsCommand implements CommandExecutor {
                                 } else {
                                     commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
                                 }
+                                break;
+                            default:
+                                commandSender.sendMessage(Hex.color(ConfigManager.incorrectEvent));
                                 break;
                         }
                     }

@@ -8,7 +8,7 @@ import java.util.List;
 public class ConfigManager {
     public static boolean firstEventEnabled, secondEventEnabled, rewardVictimNotKilledEnabled;
     public static String firstEventStartTime, firstEventStopTime, secondEventStartTime, secondEventStopTime, reloaded, noPermission, eventAlreadyStarted, eventNotStarted,
-            firstEventStarted, firstEventStopped, secondEventStarted, secondEventStopped;
+            firstEventStarted, firstEventStopped, secondEventStarted, secondEventStopped, incorrectEvent;
     public static List<String> firstEventStartedForPlayers, firstEventStoppedHaveMembers, firstEventStoppedNoMembers, secondEventStartedForPlayers,
             secondEventStoppedVictimKilled, secondEventStoppedVictimNotKilled, help;
     public static ConfigurationSection firstEventRewards, secondEventRewardsForWinner, secondEventRewardsVictimNotKilled;
@@ -29,6 +29,7 @@ public class ConfigManager {
         firstEventStopped = plugin.getConfig().getString("messages.first-event-stopped");
         secondEventStarted = plugin.getConfig().getString("messages.second-event-started");
         secondEventStopped = plugin.getConfig().getString("messages.second-event-stopped");
+        incorrectEvent = plugin.getConfig().getString("messages.incorrect-event");
         firstEventRewards = plugin.getConfig().getConfigurationSection("first-event.settings.rewards");
         firstEventStartedForPlayers = plugin.getConfig().getStringList("first-event.messages.started");
         firstEventStoppedHaveMembers = plugin.getConfig().getStringList("first-event.messages.stopped-have-members");
