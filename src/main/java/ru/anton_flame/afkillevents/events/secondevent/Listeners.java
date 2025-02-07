@@ -4,9 +4,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import ru.anton_flame.afkillevents.AFKillEvents;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
 public class Listeners implements Listener {
+
+    private final AFKillEvents plugin;
+    public Listeners(AFKillEvents plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
@@ -19,7 +25,7 @@ public class Listeners implements Listener {
                 InfoFile.get().set("second-event.winner-name", killer.getName());
                 InfoFile.save();
 
-                SecondEvent.stopVictimKilled();
+                SecondEvent.stopVictimKilled(plugin);
             }
         }
     }

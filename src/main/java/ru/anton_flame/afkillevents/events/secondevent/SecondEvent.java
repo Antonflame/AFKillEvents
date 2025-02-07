@@ -3,6 +3,7 @@ package ru.anton_flame.afkillevents.events.secondevent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
 import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
@@ -52,7 +53,7 @@ public class SecondEvent {
         }
     }
 
-    public static void stopVictimKilled() {
+    public static void stopVictimKilled(Plugin plugin) {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 for (String message : ConfigManager.secondEventStoppedVictimKilled) {
@@ -60,7 +61,7 @@ public class SecondEvent {
                 }
             }
 
-            dispatchRewardsCommand(ConfigManager.secondEventRewardsForWinner, "%player%", winnerName());
+            dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsForWinner, "%player%", winnerName());
 
             InfoFile.secondEventActive = false;
             InfoFile.get().set("second-event.active", false);
@@ -70,7 +71,7 @@ public class SecondEvent {
         }
     }
 
-    public static void stopVictimNotKilled() {
+    public static void stopVictimNotKilled(Plugin plugin) {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 for (String message : ConfigManager.secondEventStoppedVictimNotKilled) {
@@ -79,7 +80,7 @@ public class SecondEvent {
             }
 
             if (ConfigManager.rewardVictimNotKilledEnabled) {
-                dispatchRewardsCommand(ConfigManager.secondEventRewardsVictimNotKilled, "%player%", victimName());
+                dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsVictimNotKilled, "%player%", victimName());
             }
 
             InfoFile.secondEventActive = false;
@@ -90,13 +91,15 @@ public class SecondEvent {
         }
     }
 
-    public static void dispatchRewardsCommand(ConfigurationSection rewardsSection, String target, String playerName) {
+    public static void dispatchRewardsCommand(Plugin plugin, ConfigurationSection rewardsSection, String target, String playerName) {
         List<String> rewards = new ArrayList<>(rewardsSection.getKeys(false));
         String reward = rewards.get(random.nextInt(rewards.size()));
         List<String> commands = rewardsSection.getStringList(reward);
 
         for (String command : commands) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace(target, playerName));
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace(target, playerName));
+            });
         }
     }
 }

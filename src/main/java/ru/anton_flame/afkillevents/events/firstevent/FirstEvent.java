@@ -3,6 +3,7 @@ package ru.anton_flame.afkillevents.events.firstevent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
 import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
@@ -17,11 +18,11 @@ public class FirstEvent {
         return InfoFile.firstEventActive;
     }
 
-    public static String startTime = ConfigManager.secondEventStartTime;
-    public static String stopTime = ConfigManager.secondEventStopTime;
+    public static String startTime = ConfigManager.firstEventStartTime;
+    public static String stopTime = ConfigManager.firstEventStopTime;
 
     public static void start() {
-        if (ConfigManager.secondEventEnabled) {
+        if (ConfigManager.firstEventEnabled) {
             if (!isFirstEventActive()) {
                 InfoFile.firstEventActive = true;
                 InfoFile.get().set("first-event.active", true);
@@ -36,7 +37,7 @@ public class FirstEvent {
         }
     }
 
-    public static void stop() {
+    public static void stop(Plugin plugin) {
         if (isFirstEventActive()) {
             int count = 0;
             String name = "";
@@ -45,7 +46,7 @@ public class FirstEvent {
             if (playersSection != null) {
                 for (String key : playersSection.getKeys(false)) {
                     if (playersSection.getInt(key) > count) {
-                        count = InfoFile.get().getInt("first-event.players." + key);
+                        count = playersSection.getInt(key);
                         name = key;
                     }
                 }
@@ -64,7 +65,10 @@ public class FirstEvent {
                 List<String> commands = ConfigManager.firstEventRewards.getStringList(reward);
 
                 for (String command : commands) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", name));
+                    String finalName = name;
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", finalName));
+                    });
                 }
 
             } else {
