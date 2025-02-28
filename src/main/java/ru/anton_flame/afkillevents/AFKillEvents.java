@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.anton_flame.afkillevents.commands.AFKillEventsCommand;
+import ru.anton_flame.afkillevents.events.firstevent.FirstEvent;
+import ru.anton_flame.afkillevents.events.secondevent.SecondEvent;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
@@ -34,5 +36,22 @@ public final class AFKillEvents extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Плагин выключен!");
+
+        if (FirstEvent.bossBar != null) {
+            FirstEvent.bossBar.removeAll();
+            FirstEvent.bossBar = null;
+        }
+
+        if (SecondEvent.bossBar != null) {
+            SecondEvent.bossBar.removeAll();
+            SecondEvent.bossBar = null;
+        }
+
+        InfoFile.get().set("first-event.active", false);
+        InfoFile.get().set("first-event.players", "");
+        InfoFile.get().set("second-event.active", false);
+        InfoFile.get().set("second-event.winner-name", "");
+        InfoFile.get().set("second-event.victim-name", "");
+        InfoFile.save();
     }
 }

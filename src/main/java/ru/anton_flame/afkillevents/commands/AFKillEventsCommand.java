@@ -10,7 +10,6 @@ import ru.anton_flame.afkillevents.AFKillEvents;
 import ru.anton_flame.afkillevents.events.firstevent.FirstEvent;
 import ru.anton_flame.afkillevents.events.secondevent.SecondEvent;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
-import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
 import java.util.Arrays;
@@ -35,9 +34,9 @@ public class AFKillEventsCommand implements CommandExecutor, TabCompleter {
                         InfoFile.reload(plugin);
                         InfoFile.setupConfigValues();
 
-                        commandSender.sendMessage(Hex.color(ConfigManager.reloaded));
+                        commandSender.sendMessage(ConfigManager.reloaded);
                     } else {
-                        commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
+                        commandSender.sendMessage(ConfigManager.noPermission);
                     }
                     break;
 
@@ -49,12 +48,12 @@ public class AFKillEventsCommand implements CommandExecutor, TabCompleter {
                                     if (!FirstEvent.isFirstEventActive()) {
                                         FirstEvent.start();
 
-                                        commandSender.sendMessage(Hex.color(ConfigManager.firstEventStarted));
+                                        commandSender.sendMessage(ConfigManager.firstEventStarted);
                                     } else {
-                                        commandSender.sendMessage(Hex.color(ConfigManager.eventAlreadyStarted));
+                                        commandSender.sendMessage(ConfigManager.eventAlreadyStarted);
                                     }
                                 } else {
-                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
+                                    commandSender.sendMessage(ConfigManager.noPermission);
                                 }
                                 break;
                             case "second":
@@ -62,17 +61,21 @@ public class AFKillEventsCommand implements CommandExecutor, TabCompleter {
                                     if (!SecondEvent.isSecondEventActive()) {
                                         SecondEvent.start();
 
-                                        commandSender.sendMessage(Hex.color(ConfigManager.secondEventStarted));
+                                        commandSender.sendMessage(ConfigManager.secondEventStarted);
                                     } else {
-                                        commandSender.sendMessage(Hex.color(ConfigManager.eventAlreadyStarted));
+                                        commandSender.sendMessage(ConfigManager.eventAlreadyStarted);
                                     }
                                 } else {
-                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
+                                    commandSender.sendMessage(ConfigManager.noPermission);
                                 }
                                 break;
                             default:
-                                commandSender.sendMessage(Hex.color(ConfigManager.incorrectEvent));
+                                commandSender.sendMessage(ConfigManager.incorrectEvent);
                                 break;
+                        }
+                    } else {
+                        for (String help : ConfigManager.help) {
+                            commandSender.sendMessage(help);
                         }
                     }
                     break;
@@ -85,12 +88,12 @@ public class AFKillEventsCommand implements CommandExecutor, TabCompleter {
                                     if (FirstEvent.isFirstEventActive()) {
                                         FirstEvent.stop(plugin);
 
-                                        commandSender.sendMessage(Hex.color(ConfigManager.firstEventStopped));
+                                        commandSender.sendMessage(ConfigManager.firstEventStopped);
                                     } else {
-                                        commandSender.sendMessage(Hex.color(ConfigManager.eventNotStarted));
+                                        commandSender.sendMessage(ConfigManager.eventNotStarted);
                                     }
                                 } else {
-                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
+                                    commandSender.sendMessage(ConfigManager.noPermission);
                                 }
                                 break;
                             case "second":
@@ -98,30 +101,34 @@ public class AFKillEventsCommand implements CommandExecutor, TabCompleter {
                                     if (SecondEvent.isSecondEventActive()) {
                                         SecondEvent.stopVictimNotKilled(plugin);
 
-                                        commandSender.sendMessage(Hex.color(ConfigManager.secondEventStopped));
+                                        commandSender.sendMessage(ConfigManager.secondEventStopped);
                                     } else {
-                                        commandSender.sendMessage(Hex.color(ConfigManager.eventNotStarted));
+                                        commandSender.sendMessage(ConfigManager.eventNotStarted);
                                     }
                                 } else {
-                                    commandSender.sendMessage(Hex.color(ConfigManager.noPermission));
+                                    commandSender.sendMessage(ConfigManager.noPermission);
                                 }
                                 break;
                             default:
-                                commandSender.sendMessage(Hex.color(ConfigManager.incorrectEvent));
+                                commandSender.sendMessage(ConfigManager.incorrectEvent);
                                 break;
+                        }
+                    } else {
+                        for (String help : ConfigManager.help) {
+                            commandSender.sendMessage(help);
                         }
                     }
                     break;
 
                 default:
                     for (String help : ConfigManager.help) {
-                        commandSender.sendMessage(Hex.color(help));
+                        commandSender.sendMessage(help);
                     }
             }
 
         } else {
             for (String help : ConfigManager.help) {
-                commandSender.sendMessage(Hex.color(help));
+                commandSender.sendMessage(help);
             }
         }
         return true;

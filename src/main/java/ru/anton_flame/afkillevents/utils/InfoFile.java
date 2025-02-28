@@ -43,8 +43,8 @@ public class InfoFile {
         try {
             config.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            plugin.getLogger().fine("Ошибка при перезагрузке файла info.yml:");
-            plugin.getLogger().fine(e.getMessage());
+            plugin.getLogger().severe("Ошибка при перезагрузке файла info.yml:");
+            plugin.getLogger().severe(e.getMessage());
         }
     }
 
@@ -52,8 +52,8 @@ public class InfoFile {
         try {
             config.save(file);
         } catch (IOException e) {
-            Bukkit.getLogger().fine("Ошибка при сохранении файла info.yml:");
-            Bukkit.getLogger().fine(e.getMessage());
+            Bukkit.getLogger().severe("Ошибка при сохранении файла info.yml:");
+            Bukkit.getLogger().severe(e.getMessage());
         }
     }
 

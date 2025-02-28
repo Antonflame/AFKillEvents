@@ -1,11 +1,13 @@
 package ru.anton_flame.afkillevents.events.firstevent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
-import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ public class FirstEvent {
     public static String startTime = ConfigManager.firstEventStartTime;
     public static String stopTime = ConfigManager.firstEventStopTime;
 
+    public static BossBar bossBar;
+
     public static void start() {
         if (ConfigManager.firstEventEnabled) {
             if (!isFirstEventActive()) {
@@ -30,7 +34,14 @@ public class FirstEvent {
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     for (String message : ConfigManager.firstEventStartedForPlayers) {
-                        player.sendMessage(Hex.color(message));
+                        player.sendMessage(message);
+                    }
+                }
+
+                if (ConfigManager.firstEventBossBarEnabled) {
+                    bossBar = Bukkit.createBossBar(ConfigManager.firstEventBossBarText, BarColor.valueOf(ConfigManager.firstEventBossBarColor), BarStyle.valueOf(ConfigManager.firstEventBossBarStyle));
+                    for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                        bossBar.addPlayer(onlinePlayer);
                     }
                 }
             }
@@ -55,7 +66,7 @@ public class FirstEvent {
             if (count > 0) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     for (String message : ConfigManager.firstEventStoppedHaveMembers) {
-                        player.sendMessage(Hex.color(message.replace("%player%", name).replace("%kills%", Integer.toString(count))));
+                        player.sendMessage(message.replace("%player%", name).replace("%kills%", Integer.toString(count)));
                     }
                 }
 
@@ -66,15 +77,13 @@ public class FirstEvent {
 
                 for (String command : commands) {
                     String finalName = name;
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", finalName));
-                    });
+                    Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", finalName)));
                 }
 
             } else {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     for (String message : ConfigManager.firstEventStoppedNoMembers) {
-                        player.sendMessage(Hex.color(message));
+                        player.sendMessage(message);
                     }
                 }
 
@@ -84,6 +93,11 @@ public class FirstEvent {
             InfoFile.get().set("first-event.active", false);
             InfoFile.get().set("first-event.players", "");
             InfoFile.save();
+
+            if (bossBar != null) {
+                bossBar.removeAll();
+                bossBar = null;
+            }
         }
     }
 }

@@ -1,11 +1,13 @@
 package ru.anton_flame.afkillevents.events.secondevent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
-import ru.anton_flame.afkillevents.utils.Hex;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class SecondEvent {
     public static String startTime = ConfigManager.secondEventStartTime;
     public static String stopTime = ConfigManager.secondEventStopTime;
 
+    public static BossBar bossBar;
+
     public static Random random = new Random();
 
     public static void start() {
@@ -45,7 +49,14 @@ public class SecondEvent {
 
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         for (String message : ConfigManager.secondEventStartedForPlayers) {
-                            player.sendMessage(Hex.color(message.replace("%player%", victimName())));
+                            player.sendMessage(message.replace("%player%", victimName()));
+                        }
+                    }
+
+                    if (ConfigManager.secondEventBossBarEnabled) {
+                        bossBar = Bukkit.createBossBar(ConfigManager.secondEventBossBarText.replace("%victim%", victimName), BarColor.valueOf(ConfigManager.secondEventBossBarColor), BarStyle.valueOf(ConfigManager.secondEventBossBarStyle));
+                        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                            bossBar.addPlayer(onlinePlayer);
                         }
                     }
                 }
@@ -57,7 +68,7 @@ public class SecondEvent {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 for (String message : ConfigManager.secondEventStoppedVictimKilled) {
-                    player.sendMessage(Hex.color(message.replace("%player%", winnerName())));
+                    player.sendMessage(message.replace("%player%", winnerName()));
                 }
             }
 
@@ -68,6 +79,11 @@ public class SecondEvent {
             InfoFile.get().set("second-event.winner-name", "");
             InfoFile.get().set("second-event.victim-name", "");
             InfoFile.save();
+
+            if (bossBar != null) {
+                bossBar.removeAll();
+                bossBar = null;
+            }
         }
     }
 
@@ -75,7 +91,7 @@ public class SecondEvent {
         if (isSecondEventActive()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 for (String message : ConfigManager.secondEventStoppedVictimNotKilled) {
-                    player.sendMessage(Hex.color(message));
+                    player.sendMessage(message);
                 }
             }
 
@@ -88,6 +104,11 @@ public class SecondEvent {
             InfoFile.get().set("second-event.winner-name", "");
             InfoFile.get().set("second-event.victim-name", "");
             InfoFile.save();
+
+            if (bossBar != null) {
+                bossBar.removeAll();
+                bossBar = null;
+            }
         }
     }
 
@@ -97,9 +118,7 @@ public class SecondEvent {
         List<String> commands = rewardsSection.getStringList(reward);
 
         for (String command : commands) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace(target, playerName));
-            });
+            Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace(target, playerName)));
         }
     }
 }

@@ -1,7 +1,7 @@
 # Ничего не менять!
 first-event:
   active: false
-  players: ''
+  players: {}
 second-event:
   active: false
   winner-name: ''
