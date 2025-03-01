@@ -1,5 +1,6 @@
 package ru.anton_flame.afkillevents.events.secondevent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.anton_flame.afkillevents.AFKillEvents;
 
@@ -21,8 +22,10 @@ public class Tasks extends BukkitRunnable {
         String time = now.format(formatter);
 
         if (!SecondEvent.isSecondEventActive()) {
-            if (time.equals(SecondEvent.startTime)) {
-                SecondEvent.start();
+            if (Bukkit.getOnlinePlayers().size() > 1) {
+                if (time.equals(SecondEvent.startTime)) {
+                    SecondEvent.start();
+                }
             }
         } else {
             if (time.equals(SecondEvent.stopTime)) {
