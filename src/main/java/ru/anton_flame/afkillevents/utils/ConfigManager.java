@@ -8,9 +8,11 @@ import java.util.List;
 public class ConfigManager {
     public static boolean firstEventEnabled, secondEventEnabled, rewardVictimNotKilledEnabled, firstEventBossBarEnabled, secondEventBossBarEnabled;
     public static String firstEventStartTime, firstEventStopTime, secondEventStartTime, secondEventStopTime, reloaded, noPermission, eventAlreadyStarted, eventNotStarted,
-            firstEventStarted, firstEventStopped, secondEventStarted, secondEventStopped, incorrectEvent, maxKillsMessage, firstEventBossBarText, secondEventBossBarText, firstEventBossBarColor, secondEventBossBarColor, firstEventBossBarStyle, secondEventBossBarStyle;
+            firstEventStarted, firstEventStopped, secondEventStarted, secondEventStopped, incorrectEvent, maxKillsMessage, firstEventBossBarText,
+            secondEventBossBarText, firstEventBossBarColor, secondEventBossBarColor, firstEventBossBarStyle, secondEventBossBarStyle,
+            eventTimeRemainingTimePlaceholder, eventAlreadyActivePlaceholder, disabledCommand;
     public static List<String> firstEventStartedForPlayers, firstEventStoppedHaveMembers, firstEventStoppedNoMembers, secondEventStartedForPlayers,
-            secondEventStoppedVictimKilled, secondEventStoppedVictimNotKilled, help, victimQuit, victimRejoin, newVictim;
+            secondEventStoppedVictimKilled, secondEventStoppedVictimNotKilled, help, victimQuit, victimRejoin, newVictim, victimWorlds, disabledVictimCommands;
     public static ConfigurationSection firstEventRewards, secondEventRewardsForWinner, secondEventRewardsVictimNotKilled;
     public static int maxKills, victimTimeout;
 
@@ -39,6 +41,9 @@ public class ConfigManager {
         secondEventBossBarColor = Hex.color(plugin.getConfig().getString("second-event.settings.bossbar.color"));
         firstEventBossBarStyle = Hex.color(plugin.getConfig().getString("first-event.settings.bossbar.style"));
         secondEventBossBarStyle = Hex.color(plugin.getConfig().getString("second-event.settings.bossbar.style"));
+        eventTimeRemainingTimePlaceholder = Hex.color(plugin.getConfig().getString("placeholders.event_time_remaining.time"));
+        eventAlreadyActivePlaceholder = Hex.color(plugin.getConfig().getString("placeholders.event_time_remaining.event_already_active"));
+        disabledCommand = Hex.color(plugin.getConfig().getString("second-event.messages.disabled_command"));
         firstEventRewards = plugin.getConfig().getConfigurationSection("first-event.settings.rewards");
         firstEventStartedForPlayers = Hex.color(plugin.getConfig().getStringList("first-event.messages.started"));
         firstEventStoppedHaveMembers = Hex.color(plugin.getConfig().getStringList("first-event.messages.stopped-have-members"));
@@ -55,5 +60,7 @@ public class ConfigManager {
         victimQuit = Hex.color(plugin.getConfig().getStringList("second-event.messages.victim-quit"));
         victimRejoin = Hex.color(plugin.getConfig().getStringList("second-event.messages.victim-rejoin"));
         newVictim = Hex.color(plugin.getConfig().getStringList("second-event.messages.new-victim"));
+        victimWorlds = plugin.getConfig().getStringList("second-event.settings.victim_worlds");
+        disabledVictimCommands = plugin.getConfig().getStringList("second-event.settings.disabled_victim_commands");
     }
 }

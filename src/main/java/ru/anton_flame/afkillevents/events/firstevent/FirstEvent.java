@@ -28,10 +28,6 @@ public class FirstEvent {
     public static void start() {
         if (ConfigManager.firstEventEnabled) {
             if (!isFirstEventActive()) {
-                InfoFile.firstEventActive = true;
-                InfoFile.get().set("first-event.active", true);
-                InfoFile.save();
-
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     for (String message : ConfigManager.firstEventStartedForPlayers) {
                         player.sendMessage(message);
@@ -44,6 +40,10 @@ public class FirstEvent {
                         bossBar.addPlayer(onlinePlayer);
                     }
                 }
+
+                InfoFile.firstEventActive = true;
+                InfoFile.get().set("first-event.active", true);
+                InfoFile.save();
             }
         }
     }

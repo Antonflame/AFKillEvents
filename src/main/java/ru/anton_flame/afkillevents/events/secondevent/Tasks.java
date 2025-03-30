@@ -22,9 +22,11 @@ public class Tasks extends BukkitRunnable {
         String time = now.format(formatter);
 
         if (!SecondEvent.isSecondEventActive()) {
-            if (Bukkit.getOnlinePlayers().size() > 1) {
-                if (time.equals(SecondEvent.startTime)) {
+            if (time.equals(SecondEvent.startTime)) {
+                if (Bukkit.getOnlinePlayers().size() > 1) {
                     SecondEvent.start();
+                } else {
+                    Bukkit.getLogger().warning("Второй ивент не может быть начат, так как онлайн сервера меньше 1");
                 }
             }
         } else {

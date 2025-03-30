@@ -7,6 +7,8 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
+import ru.anton_flame.afkillevents.AFKillEvents;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
 import ru.anton_flame.afkillevents.utils.InfoFile;
 
@@ -37,27 +39,58 @@ public class SecondEvent {
         if (ConfigManager.secondEventEnabled) {
             if (!isSecondEventActive()) {
                 if (!Bukkit.getOnlinePlayers().isEmpty()) {
-                    InfoFile.secondEventActive = true;
-                    InfoFile.get().set("second-event.active", true);
-
                     Random random = new Random();
                     Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
-                    String victimName = players[random.nextInt(players.length)].getName();
-                    InfoFile.get().set("second-event.victim-name", victimName);
-                    InfoFile.secondEventVictimName = victimName;
-                    InfoFile.save();
+                    Player victim = null;
+                    boolean foundVictim = false;
 
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        for (String message : ConfigManager.secondEventStartedForPlayers) {
-                            player.sendMessage(message.replace("%player%", victimName()));
+                    for (int i = 0; i < players.length; i++) {
+                        victim = players[random.nextInt(players.length)];
+                        if (ConfigManager.victimWorlds.contains(victim.getWorld().getName())) {
+                            foundVictim = true;
+                            break;
                         }
                     }
 
-                    if (ConfigManager.secondEventBossBarEnabled) {
-                        bossBar = Bukkit.createBossBar(ConfigManager.secondEventBossBarText.replace("%victim%", victimName), BarColor.valueOf(ConfigManager.secondEventBossBarColor), BarStyle.valueOf(ConfigManager.secondEventBossBarStyle));
-                        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                            bossBar.addPlayer(onlinePlayer);
+                    if (foundVictim) {
+                        String victimName = victim.getName();
+                        InfoFile.get().set("second-event.victim-name", victimName);
+                        InfoFile.secondEventVictimName = victimName;
+
+                        for (Player player : Bukkit.getOnlinePlayers()) {
+                            for (String message : ConfigManager.secondEventStartedForPlayers) {
+                                player.sendMessage(message.replace("%player%", victimName));
+                            }
                         }
+
+                        if (ConfigManager.secondEventBossBarEnabled) {
+                            bossBar = Bukkit.createBossBar(ConfigManager.secondEventBossBarText
+                                    .replace("%victim%", victimName)
+                                    .replace("%x%", String.valueOf(victim.getLocation().getBlockX()))
+                                    .replace("%y%", String.valueOf(victim.getLocation().getBlockY()))
+                                    .replace("%z%", String.valueOf(victim.getLocation().getBlockZ())),
+                                    BarColor.valueOf(ConfigManager.secondEventBossBarColor), BarStyle.valueOf(ConfigManager.secondEventBossBarStyle));
+                            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                                bossBar.addPlayer(onlinePlayer);
+                            }
+
+                            Player finalVictim = victim;
+                            Bukkit.getScheduler().runTaskTimerAsynchronously(AFKillEvents.getPlugin(AFKillEvents.class), () -> {
+                                if (bossBar != null) {
+                                    bossBar.setTitle(ConfigManager.secondEventBossBarText
+                                            .replace("%victim%", victimName)
+                                            .replace("%x%", String.valueOf(finalVictim.getLocation().getBlockX()))
+                                            .replace("%y%", String.valueOf(finalVictim.getLocation().getBlockY()))
+                                            .replace("%z%", String.valueOf(finalVictim.getLocation().getBlockZ())));
+                                }
+                            }, 20, 20);
+                        }
+
+                        InfoFile.secondEventActive = true;
+                        InfoFile.get().set("second-event.active", true);
+                        InfoFile.save();
+                    } else {
+                        Bukkit.getLogger().warning("Второй ивент не может быть начат, так как подходящая жертва не была найдена!");
                     }
                 }
             }

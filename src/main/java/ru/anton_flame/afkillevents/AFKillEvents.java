@@ -8,6 +8,7 @@ import ru.anton_flame.afkillevents.events.firstevent.FirstEvent;
 import ru.anton_flame.afkillevents.events.secondevent.SecondEvent;
 import ru.anton_flame.afkillevents.utils.ConfigManager;
 import ru.anton_flame.afkillevents.utils.InfoFile;
+import ru.anton_flame.afkillevents.utils.Placeholders;
 
 public final class AFKillEvents extends JavaPlugin {
 
@@ -18,19 +19,23 @@ public final class AFKillEvents extends JavaPlugin {
         ConfigManager.setupConfigValues(this);
         InfoFile.load(this);
         InfoFile.setupConfigValues();
+
         PluginCommand afKillEventsCommand = getCommand("afkillevents");
         AFKillEventsCommand afKillEventsCommandClass = new AFKillEventsCommand(this);
         afKillEventsCommand.setExecutor(afKillEventsCommandClass);
         afKillEventsCommand.setTabCompleter(afKillEventsCommandClass);
 
         Bukkit.getPluginManager().registerEvents(new ru.anton_flame.afkillevents.events.firstevent.Listeners(), this);
-        Bukkit.getPluginManager().registerEvents(new ru.anton_flame.afkillevents.events.secondevent.Listeners(this), this);
-
         ru.anton_flame.afkillevents.events.firstevent.Tasks firstEventTasks = new ru.anton_flame.afkillevents.events.firstevent.Tasks(this);
         firstEventTasks.runTaskTimerAsynchronously(this, 0, 10 * 20);
 
+        Bukkit.getPluginManager().registerEvents(new ru.anton_flame.afkillevents.events.secondevent.Listeners(this), this);
         ru.anton_flame.afkillevents.events.secondevent.Tasks secondEventTasks = new ru.anton_flame.afkillevents.events.secondevent.Tasks(this);
         secondEventTasks.runTaskTimerAsynchronously(this, 0, 10 * 20);
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new Placeholders(this).register();
+        }
     }
 
     @Override

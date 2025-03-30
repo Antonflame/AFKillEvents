@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import ru.anton_flame.afkillevents.AFKillEvents;
@@ -53,21 +54,33 @@ public class Listeners implements Listener {
                 int delay = ConfigManager.victimTimeout * 20;
                 int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                     if (Bukkit.getPlayer(InfoFile.secondEventVictimName) == null) {
-                        String oldVictimName = InfoFile.secondEventVictimName;
+                        if (!Bukkit.getOnlinePlayers().isEmpty()) {
+                            String oldVictimName = InfoFile.secondEventVictimName;
 
-                        Random random = new Random();
-                        Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
-                        String victimName = players[random.nextInt(players.length)].getName();
+                            Random random = new Random();
+                            Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
+                            Player victim = null;
+                            boolean foundVictim = false;
 
-                        InfoFile.get().set("second-event.victim-name", victimName);
-                        InfoFile.secondEventVictimName = victimName;
-                        InfoFile.save();
+                            for (int i = 0; i < players.length; i++) {
+                                victim = players[random.nextInt(players.length)];
+                                if (ConfigManager.victimWorlds.contains(victim.getWorld().getName())) {
+                                    foundVictim = true;
+                                    break;
+                                }
+                            }
 
-                        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                            ConfigManager.newVictim.forEach(line -> onlinePlayer.sendMessage(line.replace("%old_victim%", oldVictimName).replace("%new_victim%", victimName)));
+                            if (foundVictim) {
+                                String victimName = victim.getName();
+                                InfoFile.get().set("second-event.victim-name", victimName);
+                                InfoFile.secondEventVictimName = victimName;
+                                InfoFile.save();
+
+                                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                                    ConfigManager.newVictim.forEach(line -> onlinePlayer.sendMessage(line.replace("%old_victim%", oldVictimName).replace("%new_victim%", victimName)));
+                                }
+                            }
                         }
-
-                        SecondEvent.bossBar.setTitle(ConfigManager.secondEventBossBarText.replace("%victim%", victimName));
                     }
                 }, delay);
 
@@ -95,6 +108,18 @@ public class Listeners implements Listener {
 
             if (SecondEvent.bossBar != null && !SecondEvent.bossBar.getPlayers().contains(player)) {
                 SecondEvent.bossBar.addPlayer(player);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
+        Player player = event.getPlayer();
+        if (SecondEvent.isSecondEventActive() && SecondEvent.victimName().equalsIgnoreCase(player.getName())) {
+            String command = event.getMessage().substring(1).toLowerCase();
+            if (ConfigManager.disabledVictimCommands.contains(command)) {
+                event.getPlayer().sendMessage(ConfigManager.disabledCommand.replace("%command%", command));
+                event.setCancelled(true);
             }
         }
     }

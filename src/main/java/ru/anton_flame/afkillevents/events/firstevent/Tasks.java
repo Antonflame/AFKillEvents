@@ -25,6 +25,8 @@ public class Tasks extends BukkitRunnable {
             if (time.equalsIgnoreCase(FirstEvent.startTime)) {
                 if (Bukkit.getOnlinePlayers().size() > 1) {
                     FirstEvent.start();
+                } else {
+                    Bukkit.getLogger().warning("Первый ивент не может быть начат, так как онлайн сервера меньше 1");
                 }
             }
         } else {
