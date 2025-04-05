@@ -21,132 +21,134 @@ public class SecondEvent {
     public static boolean isSecondEventActive() {
         return InfoFile.secondEventActive;
     }
+
     public static String winnerName() {
         return InfoFile.secondEventWinnerName;
     }
+
     public static String victimName() {
         return InfoFile.secondEventVictimName;
     }
 
-    public static String startTime = ConfigManager.secondEventStartTime;
-    public static String stopTime = ConfigManager.secondEventStopTime;
-
+    public static Player eventVictim = null;
     public static BossBar bossBar;
-
-    public static Random random = new Random();
+    private static final Random random = new Random();
 
     public static void start() {
-        if (ConfigManager.secondEventEnabled) {
-            if (!isSecondEventActive()) {
-                if (!Bukkit.getOnlinePlayers().isEmpty()) {
-                    Random random = new Random();
-                    Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
-                    Player victim = null;
-                    boolean foundVictim = false;
+        if (!ConfigManager.secondEventEnabled || isSecondEventActive() || Bukkit.getOnlinePlayers().isEmpty()) return;
 
-                    for (int i = 0; i < players.length; i++) {
-                        victim = players[random.nextInt(players.length)];
-                        if (ConfigManager.victimWorlds.contains(victim.getWorld().getName())) {
-                            foundVictim = true;
-                            break;
-                        }
-                    }
-
-                    if (foundVictim) {
-                        String victimName = victim.getName();
-                        InfoFile.get().set("second-event.victim-name", victimName);
-                        InfoFile.secondEventVictimName = victimName;
-
-                        for (Player player : Bukkit.getOnlinePlayers()) {
-                            for (String message : ConfigManager.secondEventStartedForPlayers) {
-                                player.sendMessage(message.replace("%player%", victimName));
-                            }
-                        }
-
-                        if (ConfigManager.secondEventBossBarEnabled) {
-                            bossBar = Bukkit.createBossBar(ConfigManager.secondEventBossBarText
-                                    .replace("%victim%", victimName)
-                                    .replace("%x%", String.valueOf(victim.getLocation().getBlockX()))
-                                    .replace("%y%", String.valueOf(victim.getLocation().getBlockY()))
-                                    .replace("%z%", String.valueOf(victim.getLocation().getBlockZ())),
-                                    BarColor.valueOf(ConfigManager.secondEventBossBarColor), BarStyle.valueOf(ConfigManager.secondEventBossBarStyle));
-                            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                                bossBar.addPlayer(onlinePlayer);
-                            }
-
-                            Player finalVictim = victim;
-                            Bukkit.getScheduler().runTaskTimerAsynchronously(AFKillEvents.getPlugin(AFKillEvents.class), () -> {
-                                if (bossBar != null) {
-                                    bossBar.setTitle(ConfigManager.secondEventBossBarText
-                                            .replace("%victim%", victimName)
-                                            .replace("%x%", String.valueOf(finalVictim.getLocation().getBlockX()))
-                                            .replace("%y%", String.valueOf(finalVictim.getLocation().getBlockY()))
-                                            .replace("%z%", String.valueOf(finalVictim.getLocation().getBlockZ())));
-                                }
-                            }, 20, 20);
-                        }
-
-                        InfoFile.secondEventActive = true;
-                        InfoFile.get().set("second-event.active", true);
-                        InfoFile.save();
-                    } else {
-                        Bukkit.getLogger().warning("Второй ивент не может быть начат, так как подходящая жертва не была найдена!");
-                    }
-                }
+        Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[0]);
+        for (int i = 0; i < players.length; i++) {
+            Player candidate = players[random.nextInt(players.length)];
+            if (ConfigManager.victimWorlds.contains(candidate.getWorld().getName())) {
+                eventVictim = candidate;
+                break;
             }
         }
+
+        if (eventVictim == null) {
+            Bukkit.getLogger().warning("Второй ивент не может быть начат, так как подходящая жертва не была найдена!");
+            return;
+        }
+
+        String victimName = eventVictim.getName();
+        InfoFile.get().set("second-event.victim-name", victimName);
+        InfoFile.secondEventVictimName = victimName;
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (String message : ConfigManager.secondEventStartedForPlayers) {
+                player.sendMessage(message.replace("%player%", victimName));
+            }
+        }
+
+        if (ConfigManager.secondEventBossBarEnabled) {
+            createAndUpdateBossBar();
+        }
+
+        InfoFile.secondEventActive = true;
+        InfoFile.get().set("second-event.active", true);
+        InfoFile.save();
+    }
+
+    private static void createAndUpdateBossBar() {
+        String victimName = eventVictim.getName();
+        bossBar = Bukkit.createBossBar(
+                formatBossBarText(victimName),
+                BarColor.valueOf(ConfigManager.secondEventBossBarColor),
+                BarStyle.valueOf(ConfigManager.secondEventBossBarStyle)
+        );
+
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            bossBar.addPlayer(onlinePlayer);
+        }
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(
+                AFKillEvents.getPlugin(AFKillEvents.class),
+                () -> {
+                    if (bossBar != null && eventVictim != null) {
+                        bossBar.setTitle(formatBossBarText(victimName));
+                    }
+                },
+                20L, 20L
+        );
+    }
+
+    private static String formatBossBarText(String victimName) {
+        return ConfigManager.secondEventBossBarText
+                .replace("%victim%", victimName)
+                .replace("%x%", String.valueOf(eventVictim.getLocation().getBlockX()))
+                .replace("%y%", String.valueOf(eventVictim.getLocation().getBlockY()))
+                .replace("%z%", String.valueOf(eventVictim.getLocation().getBlockZ()));
     }
 
     public static void stopVictimKilled(Plugin plugin) {
-        if (isSecondEventActive()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                for (String message : ConfigManager.secondEventStoppedVictimKilled) {
-                    player.sendMessage(message.replace("%player%", winnerName()));
-                }
-            }
+        if (!isSecondEventActive()) return;
 
-            dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsForWinner, "%player%", winnerName());
-
-            InfoFile.secondEventActive = false;
-            InfoFile.get().set("second-event.active", false);
-            InfoFile.get().set("second-event.winner-name", "");
-            InfoFile.get().set("second-event.victim-name", "");
-            InfoFile.save();
-
-            if (bossBar != null) {
-                bossBar.removeAll();
-                bossBar = null;
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (String message : ConfigManager.secondEventStoppedVictimKilled) {
+                player.sendMessage(message.replace("%player%", winnerName()));
             }
         }
+
+        dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsForWinner, "%player%", winnerName());
+        cleanupEvent();
     }
 
     public static void stopVictimNotKilled(Plugin plugin) {
-        if (isSecondEventActive()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                for (String message : ConfigManager.secondEventStoppedVictimNotKilled) {
-                    player.sendMessage(message);
-                }
-            }
+        if (!isSecondEventActive()) return;
 
-            if (ConfigManager.rewardVictimNotKilledEnabled) {
-                dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsVictimNotKilled, "%player%", victimName());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (String message : ConfigManager.secondEventStoppedVictimNotKilled) {
+                player.sendMessage(message);
             }
+        }
 
-            InfoFile.secondEventActive = false;
-            InfoFile.get().set("second-event.active", false);
-            InfoFile.get().set("second-event.winner-name", "");
-            InfoFile.get().set("second-event.victim-name", "");
-            InfoFile.save();
+        if (ConfigManager.rewardVictimNotKilledEnabled) {
+            dispatchRewardsCommand(plugin, ConfigManager.secondEventRewardsVictimNotKilled, "%player%", victimName());
+        }
 
-            if (bossBar != null) {
-                bossBar.removeAll();
-                bossBar = null;
-            }
+        cleanupEvent();
+    }
+
+    private static void cleanupEvent() {
+        eventVictim = null;
+
+        InfoFile.secondEventActive = false;
+        InfoFile.get().set("second-event.active", false);
+        InfoFile.get().set("second-event.winner-name", "");
+        InfoFile.get().set("second-event.victim-name", "");
+        InfoFile.save();
+
+        if (bossBar != null) {
+            bossBar.removeAll();
+            bossBar = null;
         }
     }
 
     public static void dispatchRewardsCommand(Plugin plugin, ConfigurationSection rewardsSection, String target, String playerName) {
         List<String> rewards = new ArrayList<>(rewardsSection.getKeys(false));
+        if (rewards.isEmpty()) return;
+
         String reward = rewards.get(random.nextInt(rewards.size()));
         List<String> commands = rewardsSection.getStringList(reward);
 

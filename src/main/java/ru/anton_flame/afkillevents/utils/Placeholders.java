@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 public class Placeholders extends PlaceholderExpansion {
 
@@ -38,42 +40,80 @@ public class Placeholders extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (params.equalsIgnoreCase("first_event_start_time")) {
-            return ConfigManager.firstEventStartTime;
+            return getNextStart(ConfigManager.firstEventStartTimes);
         } else if (params.equalsIgnoreCase("first_event_stop_time")) {
-            return ConfigManager.firstEventStopTime;
+            return getNextStop(ConfigManager.firstEventStopTimes);
         } else if (params.equalsIgnoreCase("second_event_start_time")) {
-            return ConfigManager.secondEventStartTime;
+            return getNextStart(ConfigManager.secondEventStartTimes);
         } else if (params.equalsIgnoreCase("second_event_stop_time")) {
-            return ConfigManager.secondEventStopTime;
+            return getNextStop(ConfigManager.secondEventStopTimes);
         } else if (params.equalsIgnoreCase("first_event_time_remaining")) {
             if (FirstEvent.isFirstEventActive()) {
                 return ConfigManager.eventAlreadyActivePlaceholder;
             } else {
-                return getTimeRemaining(ConfigManager.firstEventStartTime);
+                return getNextStartRemaining(ConfigManager.firstEventStartTimes);
             }
         } else if (params.equalsIgnoreCase("second_event_time_remaining")) {
             if (SecondEvent.isSecondEventActive()) {
                 return ConfigManager.eventAlreadyActivePlaceholder;
             } else {
-                return getTimeRemaining(ConfigManager.secondEventStartTime);
+                return getNextStartRemaining(ConfigManager.secondEventStartTimes);
             }
         }
 
         return params;
     }
 
-    private String getTimeRemaining(String eventTimeString) {
-        LocalTime eventTime = LocalTime.parse(eventTimeString, DateTimeFormatter.ofPattern("HH:mm"));
+    public static String getNextStartRemaining(Map<String, List<String>> map) {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
-        LocalDateTime eventDateTime = LocalDateTime.of(now.toLocalDate(), eventTime);
+        LocalTime nowTime = now.toLocalTime();
+        String day = now.getDayOfWeek().toString();
 
-        if (now.isAfter(eventDateTime)) {
-            eventDateTime = eventDateTime.plusDays(1);
+        List<String> times = map.get(day);
+        if (times == null || times.isEmpty()) return ConfigManager.noEventTodayPlaceholder;
+
+        for (String time : times) {
+            LocalTime eventTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
+            if (eventTime.isAfter(nowTime)) {
+                Duration duration = Duration.between(nowTime, eventTime);
+                long totalMinutes = duration.toMinutes();
+                long hours = totalMinutes / 60;
+                long minutes = totalMinutes % 60;
+
+                return ConfigManager.eventTimeRemainingTimePlaceholder
+                        .replace("%hours%", String.valueOf(hours))
+                        .replace("%minutes%", String.valueOf(minutes));
+            }
         }
 
-        Duration duration = Duration.between(now, eventDateTime);
-        long hours = duration.toHours();
-        long minutes = duration.toMinutes() % 60;
-        return ConfigManager.eventTimeRemainingTimePlaceholder.replace("%hours%", String.valueOf(hours)).replace("%minutes%", String.valueOf(minutes));
+        return ConfigManager.noMoreEventsPlaceholder;
+    }
+
+    public String getNextStart(Map<String, List<String>> map) {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
+        String timeNow = now.format(DateTimeFormatter.ofPattern("HH:mm"));
+        String day = now.getDayOfWeek().toString();
+
+        List<String> times = map.get(day);
+        if (times == null || times.isEmpty()) return ConfigManager.noEventTodayPlaceholder;
+
+        for (String time : times) {
+            if (time.compareTo(timeNow) > 0) return time;
+        }
+        return ConfigManager.noMoreEventsPlaceholder;
+    }
+
+    public String getNextStop(Map<String, List<String>> map) {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
+        String timeNow = now.format(DateTimeFormatter.ofPattern("HH:mm"));
+        String day = now.getDayOfWeek().toString();
+
+        List<String> times = map.get(day);
+        if (times == null || times.isEmpty()) return ConfigManager.noEventTodayPlaceholder;
+
+        for (String time : times) {
+            if (time.compareTo(timeNow) > 0) return time;
+        }
+        return ConfigManager.noMoreEventsPlaceholder;
     }
 }
